@@ -5,7 +5,7 @@
   "language": "node",
   "icon": "icon.png",
   "slug": "skypaper",
-  "source": "git://github.com/konnectors/cozy-konnector-template.git",
+  "source": "git://github.com/Skypaper/cozy-konnector-skypaper.git",
   "editor": "Team Skypaper",
   "vendor_link": "https://www.skypaper.io",
   "categories": ["other"],
