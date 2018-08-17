@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "name": "Connector template",
+  "name": "Skypaper",
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "template",
+  "slug": "skypaper",
   "source": "git://github.com/konnectors/cozy-konnector-template.git",
-  "editor": "Cozy",
-  "vendor_link": "Link to the target website",
+  "editor": "Team Skypaper",
+  "vendor_link": "https://www.skypaper.io",
   "categories": ["other"],
   "fields": {
-    "login": {
+    "email": {
       "type": "text"
     },
     "password": {
@@ -43,14 +43,14 @@
     }
   },
   "developer": {
-    "name": "Cozy Cloud",
-    "url": "https://cozy.io"
+    "name": "Team Skypaper",
+    "url": "https://www.skypaper.io"
   },
   "langs": ["fr", "en"],
   "locales": {
     "fr": {
-      "short_description": "Template de connecteur",
-      "long_description": "Ce template récupère une liste de livres sur un site de scraping",
+      "short_description": "Récupérez vos données de Skypaper.io",
+      "long_description": "Récupérez vos données (factures, cartes postales) de Skypaper.io",
       "permissions": {
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
@@ -59,7 +59,7 @@
           "description": "Utilisé pour sauver les données des factures"
         },
         "files": {
-          "description": "Utilisé pour sauvegarder les factures"
+          "description": "Utilisé pour sauvegarder les factures et les cartes postales"
         },
         "accounts": {
           "description": "Utilisé pour obtenir les données du compte"
@@ -67,8 +67,8 @@
       }
     },
     "en": {
-      "short_description": "Connector template",
-      "long_description": "This template fetches a list of books from a scraping website",
+      "short_description": "Fetch your data from Skypaper.io",
+      "long_description": "Fetch your data (invoices, postcards) from Skypaper.io",
       "permissions": {
         "bank operations": {
           "description": "Required to link bank operations to bills"
@@ -77,7 +77,7 @@
           "description": "Required to save the bills data"
         },
         "files": {
-          "description": "Required to save the bills"
+          "description": "Required to save the bills and the postcards"
         },
         "accounts": {
           "description": "Required to get the account's data"
