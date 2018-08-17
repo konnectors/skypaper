@@ -44,7 +44,6 @@ async function start(fields) {
 
   log('info', 'Parsing list of postcards')
   const files = await parseFiles(orders)
-  console.log(files)
 
   log('info', 'Saving Files to Cozy')
   await saveFiles(files, fields.folderPath, {
