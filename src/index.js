@@ -1,25 +1,19 @@
 const {
   BaseKonnector,
   requestFactory,
-  signin,
-  scrape,
   saveBills,
+  saveFiles,
   log
 } = require('cozy-konnector-libs')
+
 const request = requestFactory({
-  // the debug mode shows all the details about http request and responses. Very usefull for
-  // debugging but very verbose. That is why it is commented out by default
-  // debug: true,
-  // activates [cheerio](https://cheerio.js.org/) parsing on each page
-  cheerio: true,
-  // If cheerio is activated do not forget to deactivate json parsing (which is activated by
-  // default in cozy-konnector-libs
-  json: false,
-  // this allows request-promise to keep cookies between requests
+  cheerio: false,
+  json: true,
   jar: true
 })
 
-const baseUrl = 'http://books.toscrape.com'
+const moment = require('moment')
+const stream = require('stream')
 
 module.exports = new BaseKonnector(start)
 
@@ -28,95 +22,137 @@ module.exports = new BaseKonnector(start)
 // the account information come from ./konnector-dev-config.json file
 async function start(fields) {
   log('info', 'Authenticating ...')
-  await authenticate(fields.login, fields.password)
+  const token = await authenticate(fields.email, fields.password)
   log('info', 'Successfully logged in')
-  // The BaseKonnector instance expects a Promise as return of the function
-  log('info', 'Fetching the list of documents')
-  const $ = await request(`${baseUrl}/index.html`)
-  // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-  log('info', 'Parsing list of documents')
-  const documents = await parseDocuments($)
 
-  // here we use the saveBills function even if what we fetch are not bills, but this is the most
-  // common case in connectors
-  log('info', 'Saving data to Cozy')
-  await saveBills(documents, fields.folderPath, {
+  log('info', 'Fetching the list of orders')
+  const ordersNotFiltered = await fetchOrders(token)
+
+  log('info', 'Filtering orders only on Paid (status = 10)')
+  const orders = await filterOrders(ordersNotFiltered)
+
+  log('info', 'Parsing list of bills')
+  const bills = await parseBills(orders, token)
+
+  log('info', 'Saving Bills to Cozy')
+  await saveBills(bills, fields.folderPath, {
     // this is a bank identifier which will be used to link bills to bank operations. These
     // identifiers should be at least a word found in the title of a bank operation related to this
     // bill. It is not case sensitive.
-    identifiers: ['books']
+    identifiers: ['skypaper']
+  })
+
+  log('info', 'Parsing list of postcards')
+  const files = await parseFiles(orders)
+  console.log(files)
+
+  log('info', 'Saving Files to Cozy')
+  await saveFiles(files, fields.folderPath, {
+    contentType: 'image/jpeg'
   })
 }
 
-// this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
-// even if this in another domain here, but it works as an example
-function authenticate(username, password) {
-  return signin({
-    url: `http://quotes.toscrape.com/login`,
-    formSelector: 'form',
-    formData: { username, password },
-    // the validate function will check if
-    validate: (statusCode, $) => {
-      // The login in toscrape.com always works excepted when no password is set
-      if ($(`a[href='/logout']`).length === 1) {
-        return true
-      } else {
-        // cozy-konnector-libs has its own logging function which format these logs with colors in
-        // standalone and dev mode and as JSON in production mode
-        log('error', $('.error').text())
-        return false
-      }
+async function authenticate(email, password) {
+  const { token } = await request({
+    method: 'POST',
+    url: 'https://api.skypaper.io/user/login',
+    form: {
+      email: email,
+      password: password
+    }
+  })
+  return token
+}
+
+async function fetchOrders(token) {
+  return await request({
+    uri: 'https://api.skypaper.io/orders',
+    headers: {
+      Authorization: 'Bearer ' + token
     }
   })
 }
 
-// The goal of this function is to parse a html page wrapped by a cheerio instance
-// and return an array of js objects which will be saved to the cozy by saveBills (https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#savebills)
-function parseDocuments($) {
-  // you can find documentation about the scrape function here :
-  // https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#scrape
-  const docs = scrape(
-    $,
-    {
-      title: {
-        sel: 'h3 a',
-        attr: 'title'
-      },
-      amount: {
-        sel: '.price_color',
-        parse: normalizePrice
-      },
-      fileurl: {
-        sel: 'img',
-        attr: 'src',
-        parse: src => `${baseUrl}/${src}`
-      },
-      filename: {
-        sel: 'h3 a',
-        attr: 'title',
-        parse: title => `${title}.jpg`
-      }
-    },
-    'article'
-  )
-  return docs.map(doc => ({
-    ...doc,
-    // the saveBills function needs a date field
-    // even if it is a little artificial here (these are not real bills)
-    date: new Date(),
-    currency: '€',
-    vendor: 'template',
-    metadata: {
-      // it can be interesting that we add the date of import. This is not mandatory but may be
-      // usefull for debugging or data migration
-      importDate: new Date(),
-      // document version, usefull for migration after change of document structure
-      version: 1
+async function filterOrders(orders) {
+  var arrOrders = []
+  for (let order of orders) {
+    if (order.status !== 10) {
+      continue
     }
-  }))
+    arrOrders.push(order)
+  }
+  return arrOrders
 }
 
-// convert a price string to a float
-function normalizePrice(price) {
-  return parseFloat(price.replace('£', '').trim())
+async function parseBills(arrOrders, token) {
+  return arrOrders.map(order => {
+    const dateObj = moment.unix(order.updated)
+    const pdfStream = new stream.PassThrough()
+    const filePipe = request({
+      uri: 'https://api.skypaper.io/order/' + order.id + '/invoice',
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).pipe(pdfStream)
+    return {
+      // fileurl: `https://billing.scaleway.com/invoices/${organization_id}/${start_date}/${id}?format=pdf&x-auth-token=${token}`,
+      filestream: filePipe,
+      filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+        order.amount
+      }€.pdf`,
+      vendor: 'Skypaper',
+      date: dateObj.toDate(),
+      amount: parseFloat(order.amount),
+      currency: '€'
+    }
+  })
+}
+
+async function parseFiles(arrOrders) {
+  const arrFiles = []
+
+  for (let order of arrOrders) {
+    log('debug', 'parseFiles : order > ' + order.id)
+    for (let orderItem of order.items) {
+      for (let orderItemRecipient of orderItem.recipients) {
+        const dateObj = moment.unix(orderItemRecipient.updated)
+
+        const bufferStreamBack = new stream.PassThrough()
+        const bufferBack = await request
+          .get({
+            url: orderItemRecipient.path.back,
+            encoding: null,
+            headers: {
+              Accept: 'image/*, */*'
+            }
+          })
+          .pipe(bufferStreamBack)
+
+        arrFiles.push({
+          filestream: bufferBack,
+          filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+            orderItemRecipient.recipient.fullName
+          }_back.jpg`
+        })
+
+        const bufferStreamFront = new stream.PassThrough()
+        const bufferFront = await request
+          .get({
+            url: orderItemRecipient.path.front,
+            encoding: null,
+            headers: {
+              Accept: 'image/*, */*'
+            }
+          })
+          .pipe(bufferStreamFront)
+        arrFiles.push({
+          filestream: bufferFront,
+          filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+            orderItemRecipient.recipient.fullName
+          }_front.jpg`
+        })
+      }
+    }
+  }
+  return arrFiles
 }
