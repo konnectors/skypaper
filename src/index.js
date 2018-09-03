@@ -13,7 +13,6 @@ const request = requestFactory({
 })
 
 const moment = require('moment')
-const stream = require('stream')
 
 module.exports = new BaseKonnector(start)
 
@@ -86,16 +85,13 @@ async function filterOrders(orders) {
 async function parseBills(arrOrders, token) {
   return arrOrders.map(order => {
     const dateObj = moment.unix(order.updated)
-    const pdfStream = new stream.PassThrough()
-    const filePipe = request({
-      uri: 'https://api.skypaper.io/order/' + order.id + '/invoice',
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).pipe(pdfStream)
     return {
-      // fileurl: `https://billing.scaleway.com/invoices/${organization_id}/${start_date}/${id}?format=pdf&x-auth-token=${token}`,
-      filestream: filePipe,
+      fileurl: 'https://api.skypaper.io/order/' + order.id + '/invoice',
+      requestOptions: {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      },
       filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
         order.amount
       }€.pdf`,
@@ -116,40 +112,30 @@ async function parseFiles(arrOrders) {
       for (let orderItemRecipient of orderItem.recipients) {
         const dateObj = moment.unix(orderItemRecipient.updated)
 
-        const bufferStreamBack = new stream.PassThrough()
-        const bufferBack = await request
-          .get({
-            url: orderItemRecipient.path.back,
-            encoding: null,
-            headers: {
-              Accept: 'image/*, */*'
+        arrFiles.push(
+          {
+            fileurl: orderItemRecipient.path.back,
+            filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+              orderItemRecipient.recipient.fullName
+            }_back.jpg`,
+            requestOptions: {
+              headers: {
+                Accept: 'image/*, */*'
+              }
             }
-          })
-          .pipe(bufferStreamBack)
-
-        arrFiles.push({
-          filestream: bufferBack,
-          filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
-            orderItemRecipient.recipient.fullName
-          }_back.jpg`
-        })
-
-        const bufferStreamFront = new stream.PassThrough()
-        const bufferFront = await request
-          .get({
-            url: orderItemRecipient.path.front,
-            encoding: null,
-            headers: {
-              Accept: 'image/*, */*'
+          },
+          {
+            fileurl: orderItemRecipient.path.front,
+            filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+              orderItemRecipient.recipient.fullName
+            }_front.jpg`,
+            requestOptions: {
+              headers: {
+                Accept: 'image/*, */*'
+              }
             }
-          })
-          .pipe(bufferStreamFront)
-        arrFiles.push({
-          filestream: bufferFront,
-          filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
-            orderItemRecipient.recipient.fullName
-          }_front.jpg`
-        })
+          }
+        )
       }
     }
   }
