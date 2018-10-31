@@ -44,7 +44,7 @@ This connector uses [cozy-konnector-libs](https://github.com/cozy/cozy-konnector
 
 ### Maintainer
 
-The lead maintainers for this konnector is <YOUR NAME>
+The lead maintainers for this konnector is [Progi1984](https://github.com/Progi1984)
 
 
 ### Get in touch
