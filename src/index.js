@@ -3,7 +3,8 @@ const {
   requestFactory,
   saveBills,
   saveFiles,
-  log
+  log,
+  errors
 } = require('cozy-konnector-libs')
 
 const request = requestFactory({
@@ -51,15 +52,23 @@ async function start(fields) {
 }
 
 async function authenticate(email, password) {
-  const { token } = await request({
-    method: 'POST',
-    url: 'https://api.skypaper.io/user/login',
-    form: {
-      email: email,
-      password: password
+  try {
+    const { token } = await request({
+      method: 'POST',
+      url: 'https://api.skypaper.io/user/login',
+      form: {
+        email: email,
+        password: password
+      }
+    })
+    return token
+  } catch (err) {
+    if (err.statusCode === 404) {
+      throw new Error(errors.LOGIN_FAILED)
+    } else {
+      throw new Error(errors.VENDOR_DOWN)
     }
-  })
-  return token
+  }
 }
 
 async function fetchOrders(token) {
