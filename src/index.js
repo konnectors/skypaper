@@ -63,7 +63,9 @@ async function authenticate(email, password) {
     })
     return token
   } catch (err) {
-    if (err.statusCode === 404) {
+    // 401 : User disabled - Invalid credentials
+    // 404 : User not found
+    if (err.statusCode === 401 || err.statusCode === 404) {
       throw new Error(errors.LOGIN_FAILED)
     } else {
       throw new Error(errors.VENDOR_DOWN)
