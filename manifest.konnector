@@ -1,16 +1,14 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.0",
   "name": "Skypaper",
   "type": "konnector",
   "language": "node",
   "icon": "icon.svg",
   "slug": "skypaper",
-  "source": "git://github.com/konnectors/skypaper.git",
+  "source": "git@github.com:konnectors/skypaper.git",
   "editor": "Team Skypaper",
   "vendor_link": "https://www.skypaper.io",
-  "categories": [
-    "other"
-  ],
+  "categories": ["other"],
   "fields": {
     "email": {
       "type": "text"
@@ -41,19 +39,14 @@
     },
     "accounts": {
       "type": "io.cozy.accounts",
-      "verbs": [
-        "GET"
-      ]
+      "verbs": ["GET"]
     }
   },
   "developer": {
     "name": "Team Skypaper",
     "url": "https://www.skypaper.io"
   },
-  "langs": [
-    "fr",
-    "en"
-  ],
+  "langs": ["fr", "en"],
   "locales": {
     "fr": {
       "short_description": "Récupérez vos données de Skypaper.io",
