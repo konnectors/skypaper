@@ -1,11 +1,9 @@
 language: node_js
 node_js:
-- '8'
+- '12'
 env:
   global:
-  - GH_USER_EMAIL="travis@example.org"
-  - GH_USER_NAME="cozy-bot"
-  - DEPLOY_REPOSITORY="git@github.com:konnectors/skypaper.git"
+  # REGISTRY_TOKEN(editor=cozy, app=skypaper)
   - secure: PMkS9TBnCoxFdNEZ4eF2WWMIaT/JJFQ0BzQjEXuMfLiljB1mMPFlAAZjgZ+umbTaiqZh62arR6oCAAH1Q7tv4DhO8fzUTf6g/Ar/buqVeNRzQUdxkztEAOphWeG90b8a5s0ztMxw8xvQnIG46JTfcwvhc1/0ZOGhB2shciA4wDSlBs+As81wHq94Rlhb+MX9pH8w1lGE7ykN9439pR6MSWk1l8xHPi5pMLJwK2ZWRZ/Mx92s0PcJQJX3a03AHw4Jjufu3tpaSR3g6Oi+7sFBuTkEKpsCkwoEw+maAI/unbNLC+ZDNaY1VvUYEhQuPPA7r9T+dwoX3lYo7NVfha2nty6W25hnY2Co9VWSOiv6uew05ecIr4OdXJV0Fs4fA0IELTre8qeT2L3+x8bO3QFsY4rbm4ZilW0106QpD4toeSvQ6fxc3a7t5gDZa7O8zOm6ytwaYbYvUkuHIxcyfB84TgTWn1bdczFllKD3Q60EP9359hZ6pAsa+zbUNzV6jLlJF1kUEhuZK5VCYBBm2zr/QYePEn14h/iOMNJTr7ObsklfOrlAONAJW3Uh6eCV+KLNB+T22V6hfBda39uDYoKXBEmrDydrBePVdzDiaKv0IYwiMZHsh/rQq7y4I+rm92lq2sSNwh46r/k2u50J4fg3rD7bFBPyO/sMkUlgDkB9mIk=
 cache:
   yarn: true
@@ -18,7 +16,6 @@ branches:
 script:
 - yarn lint
 - yarn build
-- yarn run check
 deploy:
 - provider: script
   skip-cleanup: true
