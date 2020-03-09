@@ -3,8 +3,11 @@ node_js:
 - '12'
 env:
   global:
+  - MATTERMOST_CHANNEL=publication
   # REGISTRY_TOKEN(editor=cozy, app=skypaper)
   - secure: PMkS9TBnCoxFdNEZ4eF2WWMIaT/JJFQ0BzQjEXuMfLiljB1mMPFlAAZjgZ+umbTaiqZh62arR6oCAAH1Q7tv4DhO8fzUTf6g/Ar/buqVeNRzQUdxkztEAOphWeG90b8a5s0ztMxw8xvQnIG46JTfcwvhc1/0ZOGhB2shciA4wDSlBs+As81wHq94Rlhb+MX9pH8w1lGE7ykN9439pR6MSWk1l8xHPi5pMLJwK2ZWRZ/Mx92s0PcJQJX3a03AHw4Jjufu3tpaSR3g6Oi+7sFBuTkEKpsCkwoEw+maAI/unbNLC+ZDNaY1VvUYEhQuPPA7r9T+dwoX3lYo7NVfha2nty6W25hnY2Co9VWSOiv6uew05ecIr4OdXJV0Fs4fA0IELTre8qeT2L3+x8bO3QFsY4rbm4ZilW0106QpD4toeSvQ6fxc3a7t5gDZa7O8zOm6ytwaYbYvUkuHIxcyfB84TgTWn1bdczFllKD3Q60EP9359hZ6pAsa+zbUNzV6jLlJF1kUEhuZK5VCYBBm2zr/QYePEn14h/iOMNJTr7ObsklfOrlAONAJW3Uh6eCV+KLNB+T22V6hfBda39uDYoKXBEmrDydrBePVdzDiaKv0IYwiMZHsh/rQq7y4I+rm92lq2sSNwh46r/k2u50J4fg3rD7bFBPyO/sMkUlgDkB9mIk=
+  # MATTERMOST_HOOK_URL
+  - secure: oms9UA1A4/5FDPPhGu/I44GZm7Ymj01UJlJ96brdUt6+CO1OUAkM/ZXqB0daMvRFiQIi7XEkQ+MAmB8jaWM41V+oK56C4yTkCvAGOJqNMlatC6maJ1jUyifacd+f8Sx4/xf8KAQApyM8ti4F3ggVNy63+TfkS7nvMZVId8jcoZCkMkZpGS0pnsq8dgAkLHRJIDh5c8iBSobgA8WB7I8kj5a14dEB2YTLt7BPSPG4IHiDcIjAwTXlfHZJuVaps1B8WjnHnWSxfDDKzBa7EyKMzWbajfXui+3vYdANpfL2iN2fj3igydWigiT6V0tsqUkG/kzX71JqOnnyBsPwJXGFGcNDc/Lv4FCo4eqJ5GnHqB/5DwjFnLuS8R3TNxL9b5HbC97IXvQCgBMf/TN9MTA30KisnZK8b8F5JWo7t/zQUootIsy3su3vdUNC/zR017jSBWnTSWDgCFoeNIH+sJo7SiRypobij+R9+or8s77rM2JWtwfT1PLvf5N/SQJJ+L+rKw3pDaxMRV4Z8WJIAJqg8CynECZ6N+6qr4gJUxukLUzPgD/ajVgR+QanAySxIx4MHAFgIue96w9THsPc0dLFOm1auODIyg/Ypmd56OPYJ3o8VzozgQhkLv58k0YKqBbsqZDd1YOWNC2q3HDFubL0kynt6p5vP0mK4yJa7TF/DxE=
 cache:
   yarn: true
   directories:
@@ -24,7 +27,7 @@ deploy:
     branch: master
 - provider: script
   skip-cleanup: true
-  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish --postpublish mattermost
   on:
     tags: true
 before_install:
