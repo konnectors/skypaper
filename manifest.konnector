@@ -8,7 +8,7 @@
   "source": "git@github.com:konnectors/skypaper.git",
   "editor": "Team Skypaper",
   "vendor_link": "https://www.skypaper.io",
-  "categories": ["other"],
+  "categories": ["others"],
   "fields": {
     "email": {
       "type": "text"
