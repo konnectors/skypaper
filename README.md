@@ -27,7 +27,7 @@ Create a `konnector-dev-config.json` file at the root with your test credentials
 ```javascript
 {
   "COZY_URL": "http://cozy.tools:8080",
-  "fields": {"login":"zuck.m@rk.fb", "password":"123456"}
+  "fields": {"email":"email@domain.tld", "password":"123456"}
 }
 ```
 Then :
@@ -44,8 +44,7 @@ This connector uses [cozy-konnector-libs](https://github.com/cozy/cozy-konnector
 
 ### Maintainer
 
-The lead maintainers for this konnector is [Progi1984](https://github.com/Progi1984)
-
+The lead maintainer for this konnector is [Progi1984](https://github.com/Progi1984)
 
 ### Get in touch
 
