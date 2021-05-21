@@ -93,34 +93,34 @@ async function filterOrders(orders) {
     if (order.status !== 10) {
       continue
     }
-    // Only order with invoice
-    if (!order.hasInvoice) {
-      continue
-    }
     arrOrders.push(order)
   }
   return arrOrders
 }
 
 async function parseBills(arrOrders, token) {
-  return arrOrders.map(order => {
-    const dateObj = moment.unix(order.updated)
-    return {
-      fileurl: 'https://api.skypaper.io/order/' + order.id + '/invoice',
-      requestOptions: {
-        headers: {
-          Authorization: 'Bearer ' + token
-        }
-      },
-      filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
-        order.amount
-      }€.pdf`,
-      vendor: 'Skypaper',
-      date: dateObj.toDate(),
-      amount: parseFloat(order.amount),
-      currency: '€'
-    }
-  })
+  return arrOrders
+    .filter(order => {
+      return order.hasInvoice
+    })
+    .map(order => {
+      const dateObj = moment.unix(order.updated)
+      return {
+        fileurl: 'https://api.skypaper.io/order/' + order.id + '/invoice',
+        requestOptions: {
+          headers: {
+            Authorization: 'Bearer ' + token
+          }
+        },
+        filename: `${dateObj.format('YYYY-MM-DD')}_${order.id}_${
+          order.amount
+        }€.pdf`,
+        vendor: 'Skypaper',
+        date: dateObj.toDate(),
+        amount: parseFloat(order.amount),
+        currency: '€'
+      }
+    })
 }
 
 async function parseFiles(arrOrders) {
