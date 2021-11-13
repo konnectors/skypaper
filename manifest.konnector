@@ -24,7 +24,8 @@
     }
   },
   "data_types": [
-    "bill"
+    "bill",
+    "document"
   ],
   "screenshots": [],
   "permissions": {
